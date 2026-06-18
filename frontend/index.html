@@ -1,13 +1,540 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brochure Post</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --color-paper: #fbf8f2;
+      --color-paper-line: #e1d7c6;
+      --color-ink: #211d1a;
+      --color-ink-soft: #6f6759;
+      --color-postal: #c1432f;
+      --color-postal-soft: #f1ded7;
+
+      --font-display: "Source Serif 4", serif;
+      --font-body: "Inter", sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--color-paper);
+      color: var(--color-ink);
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Screen 1: URL input card */
+    .card {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border: 1px solid var(--color-paper-line);
+      border-radius: 4px;
+    }
+
+    .perforation {
+      height: 10px;
+      background-image: radial-gradient(circle, var(--color-paper) 3px, transparent 3.5px);
+      background-size: 16px 16px;
+      background-position: center;
+      border-bottom: 1px dashed var(--color-paper-line);
+    }
+
+    .card-content {
+      padding: 32px;
+      padding-top: 40px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--color-postal);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+
+    .subtext {
+      font-size: 14px;
+      color: var(--color-ink-soft);
+      margin: 0 0 28px;
+    }
+
+    label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-ink-soft);
+      margin-bottom: 8px;
+    }
+
+    #company-url {
+      width: 100%;
+      border: none;
+      border-bottom: 2px solid var(--color-paper-line);
+      font-family: var(--font-mono);
+      font-size: 15px;
+      color: var(--color-ink);
+      background: transparent;
+      padding: 8px 0;
+      outline: none;
+    }
+
+    #company-url:focus {
+      border-bottom-color: var(--color-postal);
+    }
+
+    #company-url:focus-visible {
+      outline: 2px solid var(--color-postal);
+      outline-offset: 2px;
+    }
+
+    .error-text {
+      color: var(--color-postal);
+      font-size: 12px;
+      margin: 8px 0 0;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+
+    #url-form button[type="submit"] {
+      width: 100%;
+      margin-top: 20px;
+      background: var(--color-ink);
+      color: var(--color-paper);
+      border: none;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 500;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+
+    #url-form button[type="submit"]:hover {
+      background: var(--color-postal);
+    }
+
+    #url-form button[type="submit"]:focus-visible {
+      outline: 2px solid var(--color-postal);
+      outline-offset: 2px;
+    }
+
+    /* Screen 2: loading */
+    #loading-screen {
+      text-align: center;
+    }
+
+    .stamp-mark {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 24px;
+      border: 3px solid var(--color-postal);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-postal);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      animation: stamp-pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes stamp-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stamp-mark { animation: none; }
+    }
+
+    .loading-text {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-ink-soft);
+    }
+
+    /* Screen 3: result */
+    .result-screen {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    #company-name {
+      font-size: 24px;
+    }
+
+    .result-url {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-ink-soft);
+      margin: 4px 0 0;
+      word-break: break-all;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-outline {
+      border: 1px solid var(--color-ink-soft);
+      background: transparent;
+      color: var(--color-ink);
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-outline:hover {
+      background: var(--color-ink);
+      color: var(--color-paper);
+    }
+
+    .btn-text {
+      border: none;
+      background: transparent;
+      color: var(--color-postal);
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    .btn-text:hover {
+      background: var(--color-postal-soft);
+    }
+
+    .btn-outline:focus-visible,
+    .btn-text:focus-visible {
+      outline: 2px solid var(--color-postal);
+      outline-offset: 2px;
+    }
+
+    .brochure-card {
+      background: #fff;
+      border: 1px solid var(--color-paper-line);
+      border-radius: 4px;
+    }
+
+    .brochure-section {
+      padding: 24px;
+      border-bottom: 1px solid var(--color-paper-line);
+    }
+
+    .brochure-section:last-child {
+      border-bottom: none;
+    }
+
+    .brochure-section h2 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      margin: 0 0 8px;
+    }
+
+    .brochure-section p,
+    .brochure-section ul {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--color-ink-soft);
+      margin: 0;
+    }
+
+    .brochure-section ul {
+      padding-left: 20px;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #brochure-print-area, #brochure-print-area * {
+        visibility: visible;
+      }
+      #brochure-print-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+      .result-header, #input-screen, #loading-screen {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="page">
+
+    <!-- SCREEN 1: ask for the company URL -->
+    <section id="input-screen" class="screen card">
+      <div class="perforation"></div>
+      <div class="card-content">
+        <span class="eyebrow">Brochure Post</span>
+        <h1>Address a website,<br />receive a brochure.</h1>
+        <p class="subtext">
+          Drop in a company's homepage. We'll read it, sort what matters, and post back a brochure.
+        </p>
+
+        <form id="url-form">
+          <label for="company-url">Destination URL</label>
+          <input type="text" id="company-url" placeholder="https://company.com" autocomplete="off" />
+          <p id="input-error" class="error-text hidden"></p>
+          <button type="submit">Generate Brochure</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: shown while the backend is working -->
+    <section id="loading-screen" class="screen hidden">
+      <div class="stamp-mark"><span>SENT</span></div>
+      <p id="loading-text" class="loading-text">Visiting the website…</p>
+    </section>
+
+    <!-- SCREEN 3: the finished brochure -->
+    <section id="result-screen" class="screen result-screen hidden">
+      <div class="result-header">
+        <div>
+          <span class="eyebrow">Delivered</span>
+          <h1 id="company-name">Your Brochure</h1>
+          <p id="result-url" class="result-url"></p>
+        </div>
+        <div class="result-actions">
+          <button id="download-btn" class="btn-outline" type="button">Download</button>
+          <button id="new-brochure-btn" class="btn-text" type="button">New Brochure</button>
+        </div>
+      </div>
+      <div id="brochure-print-area" class="brochure-card">
+        <!-- JavaScript fills this in with one block per brochure section -->
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // This is where main.py (uvicorn) is running on your own computer.
+    const API_BASE_URL = "http://127.0.0.1:8000";
+
+    // Grabbing every element we will need to read from or change.
+    const inputScreen = document.getElementById("input-screen");
+    const loadingScreen = document.getElementById("loading-screen");
+    const resultScreen = document.getElementById("result-screen");
+
+    const urlForm = document.getElementById("url-form");
+    const urlInput = document.getElementById("company-url");
+    const inputError = document.getElementById("input-error");
+
+    const loadingText = document.getElementById("loading-text");
+    const companyNameEl = document.getElementById("company-name");
+    const resultUrlEl = document.getElementById("result-url");
+    const brochurePrintArea = document.getElementById("brochure-print-area");
+    const downloadBtn = document.getElementById("download-btn");
+    const newBrochureBtn = document.getElementById("new-brochure-btn");
+
+    // These sentences match what crawler.py, extractor.py and generator.py
+    // are actually doing one after another on the backend.
+    const LOADING_STEPS = [
+      "Visiting the website…",
+      "Reading the pages…",
+      "Sorting facts with AI…",
+      "Writing the brochure…",
+    ];
+    let loadingInterval = null;
+
+    function showScreen(screenToShow) {
+      [inputScreen, loadingScreen, resultScreen].forEach((screen) => {
+        screen.classList.add("hidden");
+      });
+      screenToShow.classList.remove("hidden");
+    }
+
+    function startLoadingAnimation() {
+      let stepIndex = 0;
+      loadingText.textContent = LOADING_STEPS[stepIndex];
+      loadingInterval = setInterval(() => {
+        stepIndex = (stepIndex + 1) % LOADING_STEPS.length;
+        loadingText.textContent = LOADING_STEPS[stepIndex];
+      }, 2200);
+    }
+
+    function stopLoadingAnimation() {
+      clearInterval(loadingInterval);
+    }
+
+    // Turns "## Heading\nbody text\n## Next Heading\n..." into
+    // [{ title: "Heading", body: "body text" }, ...]
+    function parseBrochure(markdown) {
+      if (!markdown) return [];
+
+      const lines = markdown.split("\n");
+      const sections = [];
+      let current = null;
+
+      for (const line of lines) {
+        const headingMatch = line.match(/^##\s+(.*)/);
+        if (headingMatch) {
+          if (current) sections.push(current);
+          current = { title: headingMatch[1].trim(), body: [] };
+        } else if (current) {
+          current.body.push(line);
+        }
+      }
+      if (current) sections.push(current);
+
+      return sections.map((section) => ({
+        title: section.title,
+        body: section.body.join("\n").trim(),
+      }));
+    }
+
+    function renderBrochure(result) {
+      const sections = parseBrochure(result.brochure);
+
+      companyNameEl.textContent =
+        (result.structured_data && result.structured_data.company_name) || "Your Brochure";
+      resultUrlEl.textContent = result.url || "";
+
+      brochurePrintArea.innerHTML = "";
+
+      if (sections.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.style.padding = "24px";
+        emptyMessage.textContent = "No brochure content was returned.";
+        brochurePrintArea.appendChild(emptyMessage);
+        return;
+      }
+
+      sections.forEach((section) => {
+        const sectionEl = document.createElement("div");
+        sectionEl.className = "brochure-section";
+
+        const heading = document.createElement("h2");
+        heading.textContent = section.title;
+        sectionEl.appendChild(heading);
+
+        const lines = section.body.split("\n").filter((line) => line.trim() !== "");
+        const isList = lines.length > 0 && lines.every((line) => line.trim().startsWith("-"));
+
+        if (isList) {
+          const list = document.createElement("ul");
+          lines.forEach((line) => {
+            const item = document.createElement("li");
+            item.textContent = line.replace(/^-+\s*/, "");
+            list.appendChild(item);
+          });
+          sectionEl.appendChild(list);
+        } else {
+          const paragraph = document.createElement("p");
+          paragraph.textContent = section.body;
+          sectionEl.appendChild(paragraph);
+        }
+
+        brochurePrintArea.appendChild(sectionEl);
+      });
+    }
+
+    urlForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const url = urlInput.value.trim();
+      if (!url) {
+        inputError.textContent = "Enter a URL before sending.";
+        inputError.classList.remove("hidden");
+        return;
+      }
+      inputError.classList.add("hidden");
+
+      showScreen(loadingScreen);
+      startLoadingAnimation();
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/generate-brochure`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Something went wrong. Please try again.");
+        }
+
+        renderBrochure(data);
+        stopLoadingAnimation();
+        showScreen(resultScreen);
+      } catch (error) {
+        stopLoadingAnimation();
+        const message =
+          error instanceof TypeError
+            ? "Could not reach the server. Make sure the backend (uvicorn) is running on port 8000."
+            : error.message;
+        inputError.textContent = message;
+        inputError.classList.remove("hidden");
+        showScreen(inputScreen);
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      window.print();
+    });
+
+    newBrochureBtn.addEventListener("click", () => {
+      urlInput.value = "";
+      showScreen(inputScreen);
+    });
+  </script>
+</body>
 </html>
