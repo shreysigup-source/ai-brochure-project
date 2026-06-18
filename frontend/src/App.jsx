@@ -1,122 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import UrlInputScreen from "./components/UrlInputScreen";
+import LoadingScreen from "./components/LoadingScreen";
+import ResultScreen from "./components/ResultScreen";
+import { generateBrochure } from "./api";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // "input" -> "loading" -> "result"   (errors send us back to "input")
+  const [screen, setScreen] = useState("input");
+  const [result, setResult] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function handleGenerate(url) {
+    setScreen("loading");
+    setErrorMessage("");
+
+    try {
+      const data = await generateBrochure(url);
+      setResult(data);
+      setScreen("result");
+    } catch (error) {
+      let message = "Something went wrong. Please try again.";
+      if (error.response?.data?.detail) {
+        message = error.response.data.detail;
+      } else if (error.code === "ERR_NETWORK") {
+        message = "Could not reach the server. Make sure the backend (uvicorn) is running on port 8000.";
+      }
+      setErrorMessage(message);
+      setScreen("input");
+    }
+  }
+
+  function handleStartOver() {
+    setResult(null);
+    setErrorMessage("");
+    setScreen("input");
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <div className="min-h-screen bg-paper text-ink flex items-center justify-center p-6">
+      {screen === "input" && (
+        <UrlInputScreen onGenerate={handleGenerate} errorMessage={errorMessage} />
+      )}
+      {screen === "loading" && <LoadingScreen />}
+      {screen === "result" && result && (
+        <ResultScreen result={result} onStartOver={handleStartOver} />
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

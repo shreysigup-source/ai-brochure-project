@@ -7,6 +7,7 @@ load_dotenv()
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+
 def build_prompt(data):
     combined_text = ""
     for category, text in data.items():
@@ -45,13 +46,15 @@ Website content:
 
 def extract_structured_data(crawled_data):
     prompt = build_prompt(crawled_data)
-    
+
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}]
     )
     raw_output = response.choices[0].message.content.strip()
 
+    # The model sometimes wraps its JSON in ```json ... ``` even when told not to.
+    # This strips that off so json.loads() below doesn't fail.
     if raw_output.startswith("```"):
         raw_output = raw_output.strip("`")
         raw_output = raw_output.replace("json", "", 1).strip()
@@ -59,7 +62,7 @@ def extract_structured_data(crawled_data):
     try:
         structured_data = json.loads(raw_output)
     except json.JSONDecodeError:
-        print("JSON parse error. Raw output tha:")
+        print("JSON parse error. Raw output was:")
         print(raw_output)
         structured_data = None
 
