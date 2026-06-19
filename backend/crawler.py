@@ -115,6 +115,8 @@ def crawl_website(base_url):
     Categories with no matching page are simply left as an empty string -- extractor.py
     already knows to skip empty categories when it builds its prompt.
     """
+    MAX_CHARS_PER_PAGE = 3000  # roughly one page worth of reading, keeps the AI's request small
+
     base_url = base_url.rstrip("/")
 
     home_html = get_page_html(base_url)
@@ -122,7 +124,7 @@ def crawl_website(base_url):
         # If we can't even load the homepage, there's nothing more we can do.
         return {"home": ""}
 
-    crawled_data = {"home": extract_text(home_html)}
+    crawled_data = {"home": extract_text(home_html)[:MAX_CHARS_PER_PAGE]}
 
     links = extract_links(home_html, base_url)
     categorized = categorize_links(links, base_url)
@@ -142,7 +144,7 @@ def crawl_website(base_url):
             if page_html:
                 page_text += " " + extract_text(page_html)
 
-        crawled_data[category] = page_text.strip()
+        crawled_data[category] = page_text.strip()[:MAX_CHARS_PER_PAGE]
 
     return crawled_data
 

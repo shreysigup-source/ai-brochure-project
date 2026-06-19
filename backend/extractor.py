@@ -12,7 +12,7 @@ def build_prompt(data):
     combined_text = ""
     for category, text in data.items():
         if text:
-            combined_text += f"\n\n--- {category.upper()} PAGE CONTENT ---\n{text}"
+            combined_text += f"\n\n--- {category.upper()} PAGE CONTENT ---\n{text[:3000]}"
 
     prompt = f"""
 You are given raw website content from different pages of a company.
