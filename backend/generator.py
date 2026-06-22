@@ -2,6 +2,7 @@ import os
 import json
 from groq import Groq
 from dotenv import load_dotenv
+import tiktoken
 
 load_dotenv()
 
@@ -37,10 +38,20 @@ Company data (JSON):
 def generate_brochure_text(structured_data):
     prompt = build_brochure_prompt(structured_data)
 
+    # --- INPUT TOKEN COUNTING (tiktoken) ---
+    encoder = tiktoken.get_encoding("cl100k_base")
+    input_tokens = len(encoder.encode(prompt))
+    print(f"[GENERATOR] Input tokens (estimated via tiktoken): {input_tokens}")
+
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=2000
     )
+
+    # --- OUTPUT TOKEN COUNTING (from API response metadata) ---
+    print(f"[GENERATOR] Input tokens (exact from Groq): {response.usage.prompt_tokens}")
+    print(f"[GENERATOR] Output tokens (exact from Groq): {response.usage.completion_tokens}")
+    print(f"[GENERATOR] Total tokens used: {response.usage.total_tokens}")
 
     return response.choices[0].message.content.strip()

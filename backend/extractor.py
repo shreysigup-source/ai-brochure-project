@@ -2,6 +2,7 @@ import os
 import json
 from groq import Groq
 from dotenv import load_dotenv
+import tiktoken
 
 load_dotenv()
 
@@ -43,19 +44,29 @@ Website content:
 """
     return prompt
 
-
 def extract_structured_data(crawled_data):
     prompt = build_prompt(crawled_data)
+
+    # --- INPUT TOKEN COUNTING (tiktoken) ---
+    # cl100k_base is the encoding used by most modern LLMs, close enough for estimation
+    encoder = tiktoken.get_encoding("cl100k_base")
+    input_tokens = len(encoder.encode(prompt))
+    print(f"[EXTRACTOR] Input tokens (estimated via tiktoken): {input_tokens}")
 
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=2000
     )
+
+    # --- OUTPUT TOKEN COUNTING (from API response metadata) ---
+    # Groq returns exact token counts in response.usage
+    print(f"[EXTRACTOR] Input tokens (exact from Groq): {response.usage.prompt_tokens}")
+    print(f"[EXTRACTOR] Output tokens (exact from Groq): {response.usage.completion_tokens}")
+    print(f"[EXTRACTOR] Total tokens used: {response.usage.total_tokens}")
+
     raw_output = response.choices[0].message.content.strip()
 
-    # The model sometimes wraps its JSON in ```json ... ``` even when told not to.
-    # This strips that off so json.loads() below doesn't fail.
     if raw_output.startswith("```"):
         raw_output = raw_output.strip("`")
         raw_output = raw_output.replace("json", "", 1).strip()
