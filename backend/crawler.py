@@ -115,7 +115,7 @@ def crawl_website(base_url):
     Categories with no matching page are simply left as an empty string -- extractor.py
     already knows to skip empty categories when it builds its prompt.
     """
-    MAX_CHARS_PER_PAGE = 3000  # roughly one page worth of reading, keeps the AI's request small
+    MAX_CHARS_PER_PAGE = 5000  # roughly one page worth of reading, keeps the AI's request small
 
     base_url = base_url.rstrip("/")
 

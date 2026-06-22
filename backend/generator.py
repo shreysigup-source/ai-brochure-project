@@ -38,8 +38,9 @@ def generate_brochure_text(structured_data):
     prompt = build_brochure_prompt(structured_data)
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}]
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=2000
     )
 
     return response.choices[0].message.content.strip()

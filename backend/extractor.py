@@ -12,7 +12,7 @@ def build_prompt(data):
     combined_text = ""
     for category, text in data.items():
         if text:
-            combined_text += f"\n\n--- {category.upper()} PAGE CONTENT ---\n{text[:3000]}"
+            combined_text += f"\n\n--- {category.upper()} PAGE CONTENT ---\n{text[:5000]}"
 
     prompt = f"""
 You are given raw website content from different pages of a company.
@@ -48,8 +48,9 @@ def extract_structured_data(crawled_data):
     prompt = build_prompt(crawled_data)
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}]
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=2000
     )
     raw_output = response.choices[0].message.content.strip()
 
